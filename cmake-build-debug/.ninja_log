@@ -1,0 +1,5 @@
+# ninja log v5
+138	338	1676070139084977189	ExamIrc	df8ddf18ea819f79
+1	143	1676113390429542491	build.ninja	6402b0a2ad602e1a
+1	138	1676070138884978175	CMakeFiles/ExamIrc.dir/part2.c.o	2dd3af623f0fd7fd
+0	159	1676064224231324252	CMakeFiles/ExamIrc.dir/mini_serv.c.o	dee2a67f61f32b74

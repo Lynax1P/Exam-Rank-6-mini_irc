@@ -1,0 +1,3 @@
+/home/io/Documents/ExamIrc/cmake-build-debug/CMakeFiles/ExamIrc.dir
+/home/io/Documents/ExamIrc/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/io/Documents/ExamIrc/cmake-build-debug/CMakeFiles/rebuild_cache.dir
