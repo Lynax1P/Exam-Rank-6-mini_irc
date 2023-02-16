@@ -9,6 +9,7 @@
 #include "stdlib.h"
 #include "netinet/in.h"
 #include "unistd.h"
+#include <fcntl.h>
 #define ERROR -1
 #define SIZE 64500 * 2
 typedef struct client{
@@ -52,16 +53,18 @@ void send_pack_msg(int fd_out, int len_msg,users_value *u_value, postman *_postm
         }
     }
 }
-void con_user(int new_fd, users_value *u_value,_fd_set *set,postman *_postman){
+void con_user(int new_fd, users_value *u_value,_fd_set *set){
+    char buf[40] = {};
     u_value->max_fd = u_value->max_fd < new_fd ? new_fd : u_value->max_fd;
     u_value->list_fd[new_fd] = (u_value->base_fd)++;
     FD_SET(new_fd, &set->actual);
-    sprintf(_postman->send, "server : client %d just arrived\n", u_value->list_fd[new_fd]);
-    send_msg(new_fd, _postman->send, u_value, set);
+    sprintf(buf, "server : client %d just arrived\n", u_value->list_fd[new_fd]);
+    send_msg(new_fd, buf, u_value, set);
 }
-void discon_user(int close_fd, users_value *u_value,_fd_set *set,postman *_postman){
-    sprintf(_postman->send, "server : client %d just left\n", u_value->list_fd[close_fd]);
-    send_msg(close_fd,_postman->send, u_value,set);
+void disconnect_user(int close_fd, users_value *u_value,_fd_set *set){
+    char buf[40] = {};
+    sprintf(buf, "server : client %d just left\n", u_value->list_fd[close_fd]);
+    send_msg(close_fd,buf, u_value,set);
     FD_CLR(close_fd, &set->actual);
     close(close_fd);
 }
@@ -71,6 +74,7 @@ int main(int argc,char **argv){
     int port = atoi(argv[1]), serv_fd = socket(AF_INET, SOCK_STREAM, 0), connect_user;
     if(port == ERROR || serv_fd == ERROR)
         fatal_error();
+    fcntl(serv_fd, F_SETFL, O_NONBLOCK)
     struct sockaddr_in addr;
     bzero(&addr, sizeof(addr));
     socklen_t addr_len = sizeof(addr);
@@ -93,6 +97,7 @@ int main(int argc,char **argv){
             if(FD_ISSET(fd, &set.read)){
                 if(fd == serv_fd){
                     if((connect_user = accept(serv_fd, (struct sockaddr *)&addr,&addr_len)) >= 0){
+                        fcntl(fd, F_SETFL, O_NONBLOCK);
                         con_user(connect_user,&u_value,&set, &_postman);
                         break;
                     }
@@ -101,7 +106,7 @@ int main(int argc,char **argv){
                 {
                     int msg_len = recv(fd, _postman.read, SIZE, 0);
                     if (msg_len < 0){
-                        discon_user(fd, &u_value, &set, &_postman);
+                        disconnect_user(fd, &u_value, &set, &_postman);
                         break;
                     }
                     else
