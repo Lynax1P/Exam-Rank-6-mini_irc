@@ -104,8 +104,15 @@ int main(int argc,char **argv){
                 }
                 else
                 {
-                    int msg_len = recv(fd, _postman.read, SIZE, 0);
-                    if (msg_len < 0){
+                    int msg_len = 1000;
+                        while (msg_len == 1000 || _postman.read[strlen(_postman.read) -1] != '\n')
+                        {
+                            msg_len = recv(fd, _postman.read + strlen(_postman.read), 1000, 0);
+                            if(msg_len <= 0)
+                                break;
+                        }
+                    if (msg_len <= 0){
+                        bzero(_postman.read, sizeof((char *)_postman.read));
                         disconnect_user(fd, &u_value, &set, &_postman);
                         break;
                     }
